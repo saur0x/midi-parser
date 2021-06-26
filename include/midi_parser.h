@@ -141,11 +141,11 @@ struct midi_parser
 {
 	uint16_t format, track_count, time_division, active_track_count;
 
-    uint32_t
-    ticks_per_quarter,
-    us_per_tick,
-    timestamp,
-    dtime;
+	uint32_t
+	ticks_per_quarter,
+	us_per_tick,
+	timestamp,
+	dtime;
 
 	uint8_t end_of_file;
 

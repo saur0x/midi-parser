@@ -140,11 +140,11 @@ struct midi_parser
 {
 	uint16_t format, track_count, time_division, active_track_count;
 
-    uint32_t
-    ticks_per_quarter,
-    us_per_tick,
-    timestamp,
-    dtime;
+	uint32_t
+	ticks_per_quarter,
+	us_per_tick,
+	timestamp,
+	dtime;
 
 	uint8_t end_of_file;
 
@@ -159,45 +159,45 @@ struct midi_parser
 /// Reverse the bytes of a 16 bit unsigned integer.
 static inline uint16_t reverse16(uint16_t n)
 {
-    return (n << 8 & 0xFF00) | (n >> 8 & 0x00FF);
+	return (n << 8 & 0xFF00) | (n >> 8 & 0x00FF);
 }
 
 /// Reverse the bytes of a 32 bit unsigned integer.
 static inline uint32_t reverse32(uint32_t n)
 {
-    return (n << 24 & 0xFF000000) | (n << 8 & 0x00FF0000) | (n >> 8 & 0x0000FF00) | (n >> 24 & 0x000000FF);
+	return (n << 24 & 0xFF000000) | (n << 8 & 0x00FF0000) | (n >> 8 & 0x0000FF00) | (n >> 24 & 0x000000FF);
 }
 
 /// Read multi byte value from the MIDI file.
 static uint32_t midi_value_read(FILE *midi)
 {
-    uint8_t buffer = 0x80;
-    uint32_t value = 0;
+	uint8_t buffer = 0x80;
+	uint32_t value = 0;
 
-    while (buffer & 0x80) {
-        buffer = getc(midi);
-        value = value << 7 | (buffer & 0x7F);
-    }
+	while (buffer & 0x80) {
+		buffer = getc(midi);
+		value = value << 7 | (buffer & 0x7F);
+	}
 
-    return value;
+	return value;
 }
 
 /// Read multi byte value from the MIDI file.
 static uint32_t midi_value_peek(FILE *midi)
 {
 	uint8_t count = 0;
-    uint8_t buffer = 0x80;
-    uint32_t value = 0;
+	uint8_t buffer = 0x80;
+	uint32_t value = 0;
 
-    while (buffer & 0x80) {
-        buffer = getc(midi);
-        value = value << 7 | (buffer & 0x7F);
+	while (buffer & 0x80) {
+		buffer = getc(midi);
+		value = value << 7 | (buffer & 0x7F);
 		++count;
-    }
+	}
 
 	fseek(midi, -1 * count, SEEK_CUR);
 
-    return value;
+	return value;
 }
 
 
@@ -229,32 +229,32 @@ static struct midi_header *midi_header_new(struct midi_header *self, FILE *midi)
 
 static struct midi_event *midi_event_midi_new(struct midi_event *self, FILE *midi, uint8_t status)
 {
-    if (!self)
-        self = (struct midi_event *) malloc(sizeof(struct midi_event));
+	if (!self)
+		self = (struct midi_event *) malloc(sizeof(struct midi_event));
 
-    self->status = status;
+	self->status = status;
 
-    switch (status & 0xF0) {
-    case EventNoteOff:
-    case EventNoteOn:
-    case EventKeyPressure:
-    case EventControllerChange:
-    case EventPitchBend:
-        self->size = 2;
-        break;
-    case EventProgramChange:
-    case EventChannelPressure:
-        self->size = 1;
-        break;
-    default:
-        midi_status = MIDI_NoCaseMatch;
-        return NULL;
-    }
+	switch (status & 0xF0) {
+	case EventNoteOff:
+	case EventNoteOn:
+	case EventKeyPressure:
+	case EventControllerChange:
+	case EventPitchBend:
+		self->size = 2;
+		break;
+	case EventProgramChange:
+	case EventChannelPressure:
+		self->size = 1;
+		break;
+	default:
+		midi_status = MIDI_NoCaseMatch;
+		return NULL;
+	}
 
-    fread(self->midi_data, 1, self->size, midi);
+	fread(self->midi_data, 1, self->size, midi);
 
-    midi_status = MIDI_Success;
-    return self;
+	midi_status = MIDI_Success;
+	return self;
 }
 
 
@@ -286,8 +286,8 @@ static struct midi_event *midi_event_meta_new(struct midi_event *self, FILE *mid
 	if (!self)
 		self = (struct midi_event *) malloc(sizeof(struct midi_event));
 
-    self->meta_type = MIDI_GETC(midi);
-    self->size = midi_value_read(midi);
+	self->meta_type = MIDI_GETC(midi);
+	self->size = midi_value_read(midi);
 
 	switch (self->meta_type) {
 	#if MIDI_META_EVENT >= 1
@@ -368,41 +368,41 @@ struct midi_event *midi_event_new(struct midi_event *self, FILE *midi, uint8_t *
 	self->dtime = midi_value_read(midi);
 	self->status = MIDI_GETC(midi);
 
-    // Handle MIDI running status
-    if (self->status < 0x80) {
-        self->status = *running_status;
-        fseek(midi, -1, SEEK_CUR);
-    }
+	// Handle MIDI running status
+	if (self->status < 0x80) {
+		self->status = *running_status;
+		fseek(midi, -1, SEEK_CUR);
+	}
 
-    *running_status = self->status;
+	*running_status = self->status;
 
-    switch (self->status & 0xF0) {
-    case EventNoteOff:
-    case EventNoteOn:
-    case EventKeyPressure:
-    case EventControllerChange:
-    case EventPitchBend:
-    case EventProgramChange:
-    case EventChannelPressure:
-        if (!midi_event_midi_new(self, midi, self->status))
+	switch (self->status & 0xF0) {
+	case EventNoteOff:
+	case EventNoteOn:
+	case EventKeyPressure:
+	case EventControllerChange:
+	case EventPitchBend:
+	case EventProgramChange:
+	case EventChannelPressure:
+		if (!midi_event_midi_new(self, midi, self->status))
 			return NULL;
-        break;
+		break;
 
-    case EventSystemExclusive:
-        switch (self->status) {
-        case 0xF0:
-        case 0xF7:
-            midi_event_sysex_new(self, midi);
-            break;
-        case 0xFF:
-            midi_event_meta_new(self, midi);
-        }
-        break;
+	case EventSystemExclusive:
+		switch (self->status) {
+		case 0xF0:
+		case 0xF7:
+			midi_event_sysex_new(self, midi);
+			break;
+		case 0xFF:
+			midi_event_meta_new(self, midi);
+		}
+		break;
 
-    default:
+	default:
 		midi_status = MIDI_NoCaseMatch;
-        return NULL;
-    }
+		return NULL;
+	}
 
 	midi_status = MIDI_Success;
 	return self;
@@ -415,7 +415,7 @@ struct midi_track *midi_track_new(struct midi_track *self, FILE *midi, size_t tr
 
 	fseek(midi, MIDI_HEADER_SIZE, SEEK_SET);
 
-    // Skip previous tracks to get to the `track_number` track.
+	// Skip previous tracks to get to the `track_number` track.
 	for (size_t i = 0; i <= track_number; ++i) {
 		fread(&magic, 1, 4, midi);
 		assert(magic == * (uint32_t *) "MTrk");
@@ -443,8 +443,8 @@ struct midi_track *midi_track_new(struct midi_track *self, FILE *midi, size_t tr
 	/// TODO: Improve peek
 	self->next_event_timestamp = midi_value_peek(midi);
 
-    // Default initial tempo is 120 BPM. Store it as micro seconds per quarter note.
-    self->tempo = 60E6 / 120;
+	// Default initial tempo is 120 BPM. Store it as micro seconds per quarter note.
+	self->tempo = 60E6 / 120;
 
 	fseek(midi, saved_position, SEEK_SET);
 	midi_status = MIDI_Success;
@@ -453,8 +453,8 @@ struct midi_track *midi_track_new(struct midi_track *self, FILE *midi, size_t tr
 
 static inline uint8_t midi_track_over(struct midi_track *self)
 {
-    return self->end_of_track
-    || self->current_position >= self->start_position + MIDI_TRACK_HEADER_SIZE + self->size;
+	return self->end_of_track
+	|| self->current_position >= self->start_position + MIDI_TRACK_HEADER_SIZE + self->size;
 }
 
 
@@ -465,26 +465,26 @@ struct midi_event *midi_track_next(struct midi_track *self, FILE *midi, struct m
 
 	size_t saved_position = ftell(midi);
 
-    // Get `midi` to the `current_position` of this track.
-    fseek(midi, self->current_position, SEEK_SET);
+	// Get `midi` to the `current_position` of this track.
+	fseek(midi, self->current_position, SEEK_SET);
 
-    midi_event_new(event, midi, &self->running_status);
+	midi_event_new(event, midi, &self->running_status);
 
-    switch (event->status) {
-    case 0xFF:
-        switch (event->meta_type) {
-        case MetaEndOfTrack:
-            self->end_of_track = 1;
-            break;
-        case MetaSetTempo:
-            self->tempo = event->meta_data.tempo;
-        }
-    }
+	switch (event->status) {
+	case 0xFF:
+		switch (event->meta_type) {
+		case MetaEndOfTrack:
+			self->end_of_track = 1;
+			break;
+		case MetaSetTempo:
+			self->tempo = event->meta_data.tempo;
+		}
+	}
 
 	if (!midi_track_over(self))
 		self->next_event_timestamp = midi_value_peek(midi);
 
-    self->current_position = ftell(midi);
+	self->current_position = ftell(midi);
 
 	fseek(midi, saved_position, SEEK_SET);
 	midi_status = MIDI_Success;
@@ -502,8 +502,8 @@ struct midi_parser *midi_parser_new(struct midi_parser *self, FILE *midi)
 	if (!midi_header_new(&header, midi))
 		return NULL;
 
-    if (header.time_division >= 0x8000 || header.format >= 2) {
-        midi_status = MIDI_Unimplemented;
+	if (header.time_division >= 0x8000 || header.format >= 2) {
+		midi_status = MIDI_Unimplemented;
 		return NULL;
 	}
 

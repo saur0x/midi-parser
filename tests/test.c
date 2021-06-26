@@ -7,17 +7,17 @@
 
 void show_keyboard(uint8_t *notes, size_t size, FILE *output)
 {
-    for (size_t i = 21; i <= 108; ++i) {
-        putc(notes[i] ? 'H' : '.', output);
-    }
-    putc('\n', output);
+	for (size_t i = 21; i <= 108; ++i) {
+		putc(notes[i] ? 'H' : '.', output);
+	}
+	putc('\n', output);
 }
 
 void parse_midi(struct midi_parser *parser, FILE *midi)
 {
 	struct midi_event event;
 
-    uint8_t notes[128] = { 0 };
+	uint8_t notes[128] = { 0 };
 	uint8_t note, event_on;
 
 	while (!parser->end_of_file) {
@@ -54,16 +54,16 @@ void parse_midi(struct midi_parser *parser, FILE *midi)
 
 int main(int argc, char **argv)
 {
-    FILE
-    *midi = stdin,
-    *output = stdout;
+	FILE
+	*midi = stdin,
+	*output = stdout;
 
-    switch (argc) {
-    case 3:
-        output = fopen(argv[2], "wb");
-    case 2:
-        midi = fopen(argv[1], "rb");
-    }
+	switch (argc) {
+	case 3:
+		output = fopen(argv[2], "wb");
+	case 2:
+		midi = fopen(argv[1], "rb");
+	}
 
 	struct midi_parser *parser = midi_parser_new(NULL, midi);
 
@@ -71,8 +71,8 @@ int main(int argc, char **argv)
 
 	free(parser);
 
-    fclose(midi);
-    fclose(output);
+	fclose(midi);
+	fclose(output);
 
 	return 0;
 }
