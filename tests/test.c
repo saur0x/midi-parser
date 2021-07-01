@@ -21,7 +21,7 @@ void parse(FILE *midi)
 {
 	struct midi_parser *parser = midi_parser_new(NULL, midi);
 	struct midi_event event;
-    uint8_t note, event_on, notes[128] = { 0 };
+	uint8_t note, event_on, notes[128] = { 0 };
 	FILE *data_stream = stdout;
 
 	for (; !parser->end_of_file; parser->timestamp += parser->dtime) {
@@ -64,12 +64,12 @@ void parse(FILE *midi)
 			}
 		}
 
-        #ifdef SHOW_KEYBOARD
-            show_keyboard(notes, 128, stderr);
-        #endif
-        #ifdef REAL_TIME
-            usleep((useconds_t) MIDI_DELAY(parser));
-        #endif
+		#ifdef SHOW_KEYBOARD
+			show_keyboard(notes, 128, stderr);
+		#endif
+		#ifdef REAL_TIME
+			usleep((useconds_t) MIDI_DELAY(parser));
+		#endif
 	}
 
 	printf(
